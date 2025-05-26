@@ -2,6 +2,9 @@ from app.models.user import User
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from passlib.context import CryptContext
+
+
 
 class UserService:
 
@@ -11,25 +14,30 @@ class UserService:
 
     def create(self, data):
         try:
+            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
             new_user = User(
-                email=data['email'],
-                username=data['username']
+                email=data.email,
+                username=data.username,
+                hashed_password=pwd_context.hash(data.password)
             )
-
-            # add token generation here?
-
             self.db.add(new_user)
             self.db.commit()
             self.db.refresh(new_user)
-            return True, User
+            return True, new_user
 
         except SQLAlchemyError as e:
             self.db.rollback()
             return False, str(e)
 
-    def get(self, user_id):
+    def get(self, user_search, by='id'):
         try:
-            user = self.db.query(User).get(user_id)
+            query = {
+                'id': lambda val: self.db.query(User).get(val),
+                'email': lambda val: self.db.query(User).filter_by(email=val).first(),
+                'username': lambda val: self.db.query(User).filter_by(username=val).first()
+            }
+
+            user = query.get(by, query['id'])(user_search)
             return True, user
         except SQLAlchemyError as e:
             return False, str(e)
@@ -64,45 +72,21 @@ class UserService:
 
 
 if __name__ == "__main__":
+    from passlib.context import CryptContext
 
-    from sqlalchemy.orm import Session, sessionmaker
-    from sqlalchemy import create_engine
-    from sqlalchemy.exc import SQLAlchemyError
-    from app.db.base import Base
-
-    from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-    from sqlalchemy.orm import sessionmaker, declarative_base
-
-    from dotenv import load_dotenv
-    import os
-
-    load_dotenv()
-
-    db_name = os.getenv("DB_NAME")
-    db_user = os.getenv("DB_USER")
-    db_host = os.getenv("DB_HOST", "localhost")
-    db_port = os.getenv("DB_PORT", "5432")
-
-    # Set up SQLAlchemy ORM
-    DATABASE_URL = f"postgresql://{db_user}@{db_host}:{db_port}/{db_name}"
-    engine = create_engine(DATABASE_URL, echo=True)
-
-    Base.metadata.create_all(bind=engine)
-
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     # Sample user data
     sample_data = {
-        "email": "test@example.com",
-        "username": "testuser"
-    }
-
-    SessionLocal = sessionmaker(bind=engine)
-    session = SessionLocal()
+        'username': 'andre',
+        'email': 'andre@gmail.com',
+        'hashed_password': pwd_context.hash("lol"),
+        'status': True, }
 
     user_service = UserService(session)
 
     user = user_service.create(sample_data)
 
-    print(user_service.create_api_token(sample_data["email"]))
+
 
     # Example: Add a user
     # new_user = User(username="Andre", email="andr@example.com")
