@@ -1,4 +1,5 @@
 from app.models.user import User
+
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -25,6 +26,39 @@ class UserService:
         except SQLAlchemyError as e:
             self.db.rollback()
             return False, str(e)
+
+    def get(self, user_id):
+        try:
+            user = self.db.query(User).get(user_id)
+            return True, user
+        except SQLAlchemyError as e:
+            return False, str(e)
+
+    def get_all(self):
+        try:
+            users = self.db.query(User).all()
+            return True, users
+        except SQLAlchemyError as e:
+            return False, str(e)
+
+    def update(self, user_id, data):
+        user = self.db.query.get(user_id)
+        if not user:
+            return None
+        try:
+            user.username = data.get('username', user.username)
+
+        except SQLAlchemyError as e:
+            return False, str(e)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -67,6 +101,8 @@ if __name__ == "__main__":
     user_service = UserService(session)
 
     user = user_service.create(sample_data)
+
+    print(user_service.create_api_token(sample_data["email"]))
 
     # Example: Add a user
     # new_user = User(username="Andre", email="andr@example.com")
