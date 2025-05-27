@@ -4,15 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d703303e-d1bf-4300-bd8a-a0a89edc8850" name="Changes" comment="refactoring user authentication">
-      <change afterPath="$PROJECT_DIR$/app/db/deps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/db/session.py" afterDir="false" />
+    <list default="true" id="d703303e-d1bf-4300-bd8a-a0a89edc8850" name="Changes" comment="registering a user, saving them in postgresql and authenticating works, I could cry">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/auth/auth_bearer.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth/auth_bearer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/auth/auth_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth/auth_handler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/user.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/schemas/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/user.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/services/token_service.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app/services/user_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/user_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -114,7 +110,7 @@
       <option name="presentableId" value="Default" />
       <updated>1747934115401</updated>
       <workItem from="1747934116454" duration="1460000" />
-      <workItem from="1747935682551" duration="44435000" />
+      <workItem from="1747935682551" duration="51299000" />
     </task>
     <task id="LOCAL-00001" summary="User model">
       <option name="closed" value="true" />
@@ -196,7 +192,15 @@
       <option name="project" value="LOCAL" />
       <updated>1748286815961</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="registering a user, saving them in postgresql and authenticating works, I could cry">
+      <option name="closed" value="true" />
+      <created>1748294141218</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1748294141218</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -224,11 +228,12 @@
     <MESSAGE value="token model - add user column" />
     <MESSAGE value="working on a authentication system with pydantic, fastapi and jose" />
     <MESSAGE value="refactoring user authentication" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactoring user authentication" />
+    <MESSAGE value="registering a user, saving them in postgresql and authenticating works, I could cry" />
+    <option name="LAST_COMMIT_MESSAGE" value="registering a user, saving them in postgresql and authenticating works, I could cry" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/iot_device_hub$__init__.coverage" NAME="__init__ Coverage Results" MODIFIED="1748004106161" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/db" />
-    <SUITE FILE_PATH="coverage/iot_device_hub$iot_device_hub.coverage" NAME="iot_device_hub Coverage Results" MODIFIED="1748294006635" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/iot_device_hub$iot_device_hub.coverage" NAME="iot_device_hub Coverage Results" MODIFIED="1748359955735" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/iot_device_hub$user_service.coverage" NAME="user_service Coverage Results" MODIFIED="1748289310297" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/services" />
   </component>
 </project>

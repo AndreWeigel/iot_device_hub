@@ -1,13 +1,6 @@
-from pydantic import BaseModel, EmailStr
-
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
-class TokenData(BaseModel):
-    username: str or None = None
+from pydantic import BaseModel, EmailStr, ConfigDict
+from datetime import datetime
+from typing import Optional
 
 
 class UserBase(BaseModel):
@@ -28,6 +21,25 @@ class UserRead(BaseModel):
     id: int
     username: str
     email: EmailStr
+    created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    password: Optional[str] = None
+
+class UserDelete(BaseModel):
+    username: Optional[str] = None
+
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str or None = None

@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import HTTPException, status
-from app.schemas.user import UserInDB
 from app.services.user_service import UserService
 
 from dotenv import load_dotenv

@@ -1,5 +1,4 @@
 from app.models.user import User
-
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
@@ -10,7 +9,6 @@ class UserService:
 
     def __init__(self, db: Session):
         self.db = db
-
 
     def create(self, data):
         try:
@@ -42,54 +40,53 @@ class UserService:
         except SQLAlchemyError as e:
             return False, str(e)
 
-    def get_all(self):
-        try:
-            users = self.db.query(User).all()
-            return True, users
-        except SQLAlchemyError as e:
-            return False, str(e)
 
     def update(self, user_id, data):
-        user = self.db.query.get(user_id)
-        if not user:
-            return None
+        success, user = self.get(user_id)
+        if not success or not user:
+            return False, "User not found"
         try:
-            user.username = data.get('username', user.username)
+            update_data = data.dict(exclude_unset=True)
+
+            # Prevent duplicate username or email
+            if data.get('username') and data['username'] != user.username:
+                existing = self.db.query(User).filter(User.username == data['username'], User.id != user.id).first()
+                if existing:
+                    return False, "Username already taken"
+
+            if data.get('email') and data['email'] != user.email:
+                existing = self.db.query(User).filter(User.email == data['email'], User.id != user.id).first()
+                if existing:
+                    return False, "Email already taken"
+
+            if "username" in update_data:
+                if self.get(update_data['username'], by = 'username'):
+                    return False, "Username already taken"
+                user.username = update_data["username"]
+
+            if "email" in update_data:
+                if self.get(update_data['email'], by = 'email'):
+                    return False, "Email already taken"
+                user.email = update_data["email"]
+
+            if "password" in update_data:
+                pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+                user.hashed_password = pwd_context.hash(update_data["password"])
+
+            self.db.commit()
+            self.db.refresh(user)
+            return True, user
 
         except SQLAlchemyError as e:
             return False, str(e)
 
-
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-    from passlib.context import CryptContext
-
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    # Sample user data
-    sample_data = {
-        'username': 'andre',
-        'email': 'andre@gmail.com',
-        'hashed_password': pwd_context.hash("lol"),
-        'status': True, }
-
-    user_service = UserService(session)
-
-    user = user_service.create(sample_data)
-
-
-
-    # Example: Add a user
-    # new_user = User(username="Andre", email="andr@example.com")
-    # session.add(new_user)
-    # session.commit()
-    # session.close()
+    def delete(self, user_id):
+        success, user = self.get(user_id)
+        if not success or not user:
+            return False, "User not found"
+        try:
+            self.db.delete(user)
+            self.db.commit()
+            return True, None
+        except SQLAlchemyError as e:
+            return False, str(e)
