@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from app.services.user_service import UserService
+from fastapi import HTTPException
 
 from dotenv import load_dotenv
 import os
@@ -24,14 +25,17 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 def authenticate_user(db, username: str, password: str):
+    try:
+        user = UserService.get_user_internal(db, username)
+    except HTTPException as e:
+        if e.status_code == 404:
+            return None
+        raise  # re-raise any other unexpected exception
 
-    success, result = UserService(db).get(username, by='username')
-    print(success, result)
-    if not success:
+    if not verify_password(password, user.hashed_password):
         return None
-    if not verify_password(password, result.hashed_password):
-        return None
-    return result
+
+    return user
 
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=15)):
     to_encode = data.copy()

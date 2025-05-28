@@ -21,14 +21,18 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         token_data = TokenData(username=username)
 
     except JWTError:
-        raise credentials_exception
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
 
-    success, result = UserService(db).get(username, by='username')
-    if result is None:
-        raise credentials_exception
-    return result
+    try:
+        user = UserService.get_user_internal(db, username)
+    except HTTPException as e:
+        if e.status_code == 404:
+            raise HTTPException(status_code=401, detail="User no longer exists")
+        raise
+
+    return UserInDB.model_validate(user, from_attributes=True)
 
 async def get_current_active_user(current_user: UserInDB = Depends(get_current_user)):
-    if not current_user.status:
+    if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user

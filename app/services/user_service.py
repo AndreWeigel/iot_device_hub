@@ -1,92 +1,92 @@
-from app.models.user import User
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
+from app.models.user import User
+from app.schemas.user import UserCreate, UserUpdate, UserRead
+from fastapi import HTTPException, status
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class UserService:
+    @staticmethod
+    def get_user(db: Session, identifier, by: str = "id") -> UserRead:
+        query = {
+            "id": lambda val: db.query(User).get(val),
+            "email": lambda val: db.query(User).filter(User.email == val).first(),
+            "username": lambda val: db.query(User).filter(User.username == val).first(),
+        }
 
-    def __init__(self, db: Session):
-        self.db = db
+        user = query.get(by, lambda _: None)(identifier)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
 
-    def create(self, data):
+        return UserRead.model_validate(user)
+
+    @staticmethod
+    def get_user_internal(db: Session, username: str) -> User:
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+
+    @staticmethod
+    def create_user(db: Session, user_data: UserCreate) -> UserRead:
         try:
-            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
             new_user = User(
-                email=data.email,
-                username=data.username,
-                hashed_password=pwd_context.hash(data.password)
+                email=user_data.email,
+                username=user_data.username,
+                hashed_password=pwd_context.hash(user_data.password)
             )
-            self.db.add(new_user)
-            self.db.commit()
-            self.db.refresh(new_user)
-            return True, new_user
+            db.add(new_user)
+            db.commit()
+            db.refresh(new_user)
+            return UserRead.model_validate(new_user)
+        except SQLAlchemyError:
+            db.rollback()
+            raise HTTPException(status_code=500, detail="Failed to create user")
 
-        except SQLAlchemyError as e:
-            self.db.rollback()
-            return False, str(e)
+    @staticmethod
+    def update_user(db: Session, user_id: int, update_data: UserUpdate) -> UserRead:
+        user = db.query(User).get(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
 
-    def get(self, user_search, by='id'):
+        data = update_data.dict(exclude_unset=True)
+
+        # Check for username conflict
+        if "username" in data and data["username"] != user.username:
+            if db.query(User).filter(User.username == data["username"], User.id != user.id).first():
+                raise HTTPException(status_code=400, detail="Username already taken")
+            user.username = data["username"]
+
+        # Check for email conflict
+        if "email" in data and data["email"] != user.email:
+            if db.query(User).filter(User.email == data["email"], User.id != user.id).first():
+                raise HTTPException(status_code=400, detail="Email already taken")
+            user.email = data["email"]
+
+        # Update password
+        if "password" in data:
+            user.hashed_password = pwd_context.hash(data["password"])
+
         try:
-            query = {
-                'id': lambda val: self.db.query(User).get(val),
-                'email': lambda val: self.db.query(User).filter_by(email=val).first(),
-                'username': lambda val: self.db.query(User).filter_by(username=val).first()
-            }
+            db.commit()
+            db.refresh(user)
+            return UserRead.model_validate(user)
+        except SQLAlchemyError:
+            db.rollback()
+            raise HTTPException(status_code=500, detail="Failed to update user")
 
-            user = query.get(by, query['id'])(user_search)
-            return True, user
-        except SQLAlchemyError as e:
-            return False, str(e)
+    @staticmethod
+    def delete_user(db: Session, user_id: int) -> None:
+        user = db.query(User).get(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
 
-
-    def update(self, user_id, data):
-        success, user = self.get(user_id)
-        if not success or not user:
-            return False, "User not found"
         try:
-            update_data = data.dict(exclude_unset=True)
-
-            # Prevent duplicate username or email
-            if data.get('username') and data['username'] != user.username:
-                existing = self.db.query(User).filter(User.username == data['username'], User.id != user.id).first()
-                if existing:
-                    return False, "Username already taken"
-
-            if data.get('email') and data['email'] != user.email:
-                existing = self.db.query(User).filter(User.email == data['email'], User.id != user.id).first()
-                if existing:
-                    return False, "Email already taken"
-
-            if "username" in update_data:
-                if self.get(update_data['username'], by = 'username'):
-                    return False, "Username already taken"
-                user.username = update_data["username"]
-
-            if "email" in update_data:
-                if self.get(update_data['email'], by = 'email'):
-                    return False, "Email already taken"
-                user.email = update_data["email"]
-
-            if "password" in update_data:
-                pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-                user.hashed_password = pwd_context.hash(update_data["password"])
-
-            self.db.commit()
-            self.db.refresh(user)
-            return True, user
-
-        except SQLAlchemyError as e:
-            return False, str(e)
-
-    def delete(self, user_id):
-        success, user = self.get(user_id)
-        if not success or not user:
-            return False, "User not found"
-        try:
-            self.db.delete(user)
-            self.db.commit()
-            return True, None
-        except SQLAlchemyError as e:
-            return False, str(e)
+            db.delete(user)
+            db.commit()
+        except SQLAlchemyError:
+            db.rollback()
+            raise HTTPException(status_code=500, detail="Failed to delete user")

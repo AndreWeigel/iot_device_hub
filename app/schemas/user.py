@@ -6,11 +6,13 @@ from typing import Optional
 class UserBase(BaseModel):
     username: str
     email: str
-    status: bool
+    is_active: bool
 
 
 class UserInDB(UserBase):
+    id: int
     hashed_password: str
+    model_config = ConfigDict(from_attributes=True)
 
 class UserCreate(BaseModel):
     username: str

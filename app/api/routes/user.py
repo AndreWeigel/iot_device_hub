@@ -26,30 +26,26 @@ async def check_current_user(current_user: UserBase = Depends(get_current_active
 
 @router.post("/user", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
-    if UserService(db).get(user, by='username')[0]:
+    try:
+        UserService.get_user(db, user.username, by='username')
         raise HTTPException(status_code=400, detail="Username already registered")
-    if UserService(db).get(user, by='email')[0]:
+    except HTTPException as e:
+        if e.status_code != 404:
+            raise
+
+    try:
+        UserService.get_user(db, user.email, by='email')
         raise HTTPException(status_code=400, detail="Email already registered")
-    success, result = UserService(db).create(user)
-    if not success:
-        raise HTTPException(status_code=400, detail=str(result))
-    return result
+    except HTTPException as e:
+        if e.status_code != 404:
+            raise
+
+    return UserService.create_user(db, user)
 
 @router.put("/user", response_model=UserRead, status_code=status.HTTP_200_OK)
 def update_user(new_user_data: UserUpdate, db: Session = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
-    success, user = UserService(db).get(current_user.id)
-    if not success or not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    success, result = UserService(db).update(current_user.id, new_user_data)
-    if not success:
-        raise HTTPException(status_code=400, detail=str(result))
-    return result
+    return UserService.update_user(db, current_user.id, new_user_data)
 
 @router.delete("/user", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(db: Session = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
-    success, user = UserService(db).get(current_user.id)
-    if not success or not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    success, result = UserService(db).delete(current_user.id)
-    if not success:
-        raise HTTPException(status_code=400, detail=str(result))
+    UserService.delete_user(db, current_user.id)
