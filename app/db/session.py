@@ -1,6 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.db.base import Base
+
+from app.models.device import Device
+from app.models.user import User
+
 from dotenv import load_dotenv
 import os
 
