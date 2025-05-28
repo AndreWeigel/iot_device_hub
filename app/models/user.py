@@ -18,3 +18,6 @@ class User(Base):
     created_at = Column(DateTime, default = datetime.now(timezone.utc), nullable=False)
 
     devices = relationship("Device", back_populates="owner")
+
+    def __repr__(self) -> str:
+        return f"User (id ={self.id}, username ={self.username}, is_active ={self.is_active})> "

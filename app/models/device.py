@@ -15,3 +15,6 @@ class Device(Base):
 
     # Relationship to user
     owner = relationship("User", back_populates="devices")
+
+    def __repr__(self) -> str:
+        return f"<Device (id ={self.id}, name ={self.name}, owner ={self.owner}, last_seen ={self.last_seen}, is_active ={self.is_active})> )>"
