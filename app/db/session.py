@@ -1,5 +1,5 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+
 from app.db.base import Base
 
 from app.models.device import Device
@@ -15,13 +15,9 @@ db_user = os.getenv("DB_USER")
 db_host = os.getenv("DB_HOST", "localhost")
 db_port = os.getenv("DB_PORT", "5432")
 
-# Set up SQLAlchemy ORM
-DATABASE_URL = f"postgresql://{db_user}@{db_host}:{db_port}/{db_name}"
-engine = create_engine(DATABASE_URL)
+# Set up database
+DATABASE_URL = f"postgresql+asyncpg://{db_user}@{db_host}:{db_port}/{db_name}"
 
-Base.metadata.create_all(bind=engine)
-
-
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-session = SessionLocal()
+# Async engine and session
+engine = create_async_engine(DATABASE_URL, echo=False)
+async_session = async_sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)

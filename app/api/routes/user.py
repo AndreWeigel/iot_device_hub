@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import timedelta
 
 from app.schemas.user import UserInDB, UserBase, UserRead, UserUpdate, UserDelete, UserCreate, Token
@@ -12,7 +12,7 @@ from app.db.deps import get_db
 router = APIRouter()
 
 @router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"})
@@ -25,7 +25,7 @@ async def check_current_user(current_user: UserBase = Depends(get_current_active
     return current_user
 
 @router.post("/user", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     try:
         UserService.get_user(db, user.username, by='username')
         raise HTTPException(status_code=400, detail="Username already registered")
@@ -43,9 +43,9 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return UserService.create_user(db, user)
 
 @router.put("/user", response_model=UserRead, status_code=status.HTTP_200_OK)
-def update_user(new_user_data: UserUpdate, db: Session = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
+def update_user(new_user_data: UserUpdate, db: AsyncSession = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
     return UserService.update_user(db, current_user.id, new_user_data)
 
 @router.delete("/user", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(db: Session = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
+def delete_user(db: AsyncSession = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
     UserService.delete_user(db, current_user.id)
