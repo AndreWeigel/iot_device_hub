@@ -18,6 +18,10 @@ db_port = os.getenv("DB_PORT", "5432")
 # Set up database
 DATABASE_URL = f"postgresql+asyncpg://{db_user}@{db_host}:{db_port}/{db_name}"
 
+
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL parameters not set in .env")
+
 # Async engine and session
 engine = create_async_engine(DATABASE_URL, echo=False)
 async_session = async_sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)

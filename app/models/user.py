@@ -1,8 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
-
-from datetime import datetime, timezone
-
 from app.db.base import Base
 
 
@@ -15,7 +14,7 @@ class User(Base):
     username = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default = True, nullable=False)
-    created_at = Column(DateTime, default = datetime.now(timezone.utc), nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
 
     devices = relationship("Device", back_populates="owner")
 

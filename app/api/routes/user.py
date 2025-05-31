@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import timedelta
 
+
 from app.schemas.user import UserInDB, UserBase, UserRead, UserUpdate, UserDelete, UserCreate, Token
 from app.services.user_service import UserService
 from app.auth.auth_handler import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -13,7 +14,7 @@ router = APIRouter()
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    user = authenticate_user(db, form_data.username, form_data.password)
+    user = await authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"})
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -25,27 +26,13 @@ async def check_current_user(current_user: UserBase = Depends(get_current_active
     return current_user
 
 @router.post("/user", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    try:
-        UserService.get_user(db, user.username, by='username')
-        raise HTTPException(status_code=400, detail="Username already registered")
-    except HTTPException as e:
-        if e.status_code != 404:
-            raise
-
-    try:
-        UserService.get_user(db, user.email, by='email')
-        raise HTTPException(status_code=400, detail="Email already registered")
-    except HTTPException as e:
-        if e.status_code != 404:
-            raise
-
-    return UserService.create_user(db, user)
+async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
+    return await UserService.create_user(db, user)
 
 @router.put("/user", response_model=UserRead, status_code=status.HTTP_200_OK)
-def update_user(new_user_data: UserUpdate, db: AsyncSession = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
-    return UserService.update_user(db, current_user.id, new_user_data)
+async def update_user(new_user_data: UserUpdate, db: AsyncSession = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
+    return await UserService.update_user(db, current_user.id, new_user_data)
 
 @router.delete("/user", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(db: AsyncSession = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
-    UserService.delete_user(db, current_user.id)
+async def delete_user(db: AsyncSession = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
+    await UserService.delete_user(db, current_user.id)

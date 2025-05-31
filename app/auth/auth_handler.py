@@ -24,9 +24,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
-def authenticate_user(db, username: str, password: str):
+async def authenticate_user(db, username: str, password: str):
     try:
-        user = UserService.get_user_internal(db, username)
+        user = await UserService.get_user_internal(db, username)
     except HTTPException as e:
         if e.status_code == 404:
             return None

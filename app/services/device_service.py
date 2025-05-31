@@ -33,10 +33,13 @@ class DeviceService:
     @staticmethod
     async def create_device(db: AsyncSession, device_data: DeviceCreate, user_id: int) -> DeviceRead:
         # Enforce sure unique device name for user
-        query = select(Device).where(Device.user_id == user_id)
+        query = select(Device).where(
+            Device.user_id == user_id,
+            Device.name == device_data.name
+        )
         result = await db.execute(query)
-        devices = result.scalars().all()
-        if any(device.name == device_data.name for device in devices):
+        existing_device = result.scalar_one_or_none()
+        if existing_device:
             raise HTTPException(status_code=400, detail="Device name already exists for this user")
 
         device = Device(

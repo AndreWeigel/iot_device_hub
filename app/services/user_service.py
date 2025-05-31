@@ -5,13 +5,15 @@ from passlib.context import CryptContext
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate, UserRead
 from fastapi import HTTPException, status
+from typing import Optional
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class UserService:
     @staticmethod
-    async def get_user(db: AsyncSession, identifier, by: str = "id") -> UserRead:
+    async def get_user(db: AsyncSession, identifier, by: str = "id") -> Optional[User]:
         query_map = {
             "id": select(User).where(User.id == identifier),
             "email": select(User).where(User.email == identifier),
@@ -19,18 +21,13 @@ class UserService:
         }
 
         query = query_map.get(by)
-        if not query:
-            raise HTTPException(status_code=400, detail="Invalid lookup field")
+
         result = await db.execute(query)
-        user = result.scalar_one_or_none()
 
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-
-        return UserRead.model_validate(user)
+        return result.scalar_one_or_none()
 
     @staticmethod
-    async def get_user_internal(db: AsyncSession, username: str) -> User:
+    async def get_user_internal(db: AsyncSession, username: str) -> Optional[User]:
         query = select(User).where(User.username == username)
         result = await db.execute(query)
         user = result.scalar_one_or_none()
@@ -43,7 +40,15 @@ class UserService:
 
     @staticmethod
     async def create_user(db: AsyncSession, user_data: UserCreate) -> UserRead:
+        #Check if username already exists
+        if await UserService.get_user(db, user_data.username, by='username'):
+            raise HTTPException(status_code=400, detail="Username already registered")
+        # Check if email already exists
+        if await UserService.get_user(db, user_data.email, by='email'):
+            raise HTTPException(status_code=400, detail="Email already registered")
+
         try:
+
             new_user = User(
                 email=user_data.email,
                 username=user_data.username,
@@ -53,8 +58,9 @@ class UserService:
             await db.commit()
             await db.refresh(new_user)
             return UserRead.model_validate(new_user)
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
             await db.rollback()
+            print(e)
             raise HTTPException(status_code=500, detail="Failed to create user")
 
     @staticmethod

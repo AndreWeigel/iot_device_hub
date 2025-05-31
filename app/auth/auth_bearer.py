@@ -24,7 +24,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         raise HTTPException(status_code=401, detail="Could not validate credentials")
 
     try:
-        user = UserService.get_user_internal(db, username)
+        user = await UserService.get_user_internal(db, username)
     except HTTPException as e:
         if e.status_code == 404:
             raise HTTPException(status_code=401, detail="User no longer exists")

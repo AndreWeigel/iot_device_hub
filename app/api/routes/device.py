@@ -16,18 +16,18 @@ router = APIRouter()
 
 @router.get("/device", response_model=List[DeviceRead])
 async def get_devices_by_current_user(current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
-    return DeviceService.get_devices_by_user(db, current_user.id)
+    return await DeviceService.get_devices_by_user(db, current_user.id)
 
 
 @router.post("/device", response_model=DeviceRead, status_code=status.HTTP_201_CREATED)
-def register_device(new_device: DeviceCreate, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
-    return DeviceService.create_device(db, new_device, current_user.id)
+async def register_device(new_device: DeviceCreate, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+    return await DeviceService.create_device(db, new_device, current_user.id)
 
 
 @router.put("/devices/{device_id}", response_model=DeviceRead)
-def update_device_route(device_id: int, update_data: DeviceUpdate, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
-    return DeviceService.update_device_for_user(db, device_id, current_user.id, update_data)
+async def update_device_route(device_id: int, update_data: DeviceUpdate, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+    return await DeviceService.update_device_for_user(db, device_id, current_user.id, update_data)
 
 @router.delete("/devices/{device_id}", response_model=DeviceRead)
-def delete_device_route(device_id: int, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
-    return DeviceService.delete_device_for_user(db, device_id, current_user.id)
+async def delete_device_route(device_id: int, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+    return await DeviceService.delete_device_for_user(db, device_id, current_user.id)

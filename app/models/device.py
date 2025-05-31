@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
 from app.db.base import Base
 
 class Device(Base):
@@ -11,7 +12,7 @@ class Device(Base):
     device_type = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    last_seen = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    last_seen = Column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationship to user
     owner = relationship("User", back_populates="devices")
