@@ -5,6 +5,12 @@ from sqlalchemy.orm import relationship
 from app.db.base import Base
 
 class Device(Base):
+    """
+    Represents an IoT device registered by a user.
+
+    Each device is linked to a specific user and can report telemetry data.
+    The device has identifying attributes and tracks its last communication timestamp.
+    """
     __tablename__ = "devices"
 
     id = Column(Integer, primary_key=True, index=True)

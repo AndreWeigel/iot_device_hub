@@ -5,6 +5,12 @@ from sqlalchemy.dialects.postgresql import TIMESTAMP
 from app.db.base import Base
 
 class DeviceData(Base):
+    """
+    Represents a single telemetry data point reported by a device.
+
+    Contains sensor type, value, and timestamp. Each record is associated
+    with a specific IoT device.
+    """
     __tablename__ = "device_data"
 
     id = Column(Integer, primary_key=True, index=True)

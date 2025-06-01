@@ -2,18 +2,28 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
+from fastapi import HTTPException
+from typing import Optional
+
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate, UserRead
-from fastapi import HTTPException, status
-from typing import Optional
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class UserService:
+    """
+    Service class for handling all user-related operations.
+
+    Provides static methods for retrieving, creating, updating,
+    and deleting user records from the database.
+    """
+
     @staticmethod
     async def get_user(db: AsyncSession, identifier, by: str = "id") -> Optional[User]:
+        """Retrieve a user based on a given identifier (id, email, or username)."""
+
         query_map = {
             "id": select(User).where(User.id == identifier),
             "email": select(User).where(User.email == identifier),
@@ -28,6 +38,9 @@ class UserService:
 
     @staticmethod
     async def get_user_internal(db: AsyncSession, username: str) -> Optional[User]:
+        """Internal method to fetch a user by username.
+        Raises HTTP 404 if user is not found."""
+
         query = select(User).where(User.username == username)
         result = await db.execute(query)
         user = result.scalar_one_or_none()
@@ -37,9 +50,9 @@ class UserService:
 
         return user
 
-
     @staticmethod
     async def create_user(db: AsyncSession, user_data: UserCreate) -> UserRead:
+        """Create a new user with unique email and username."""
         #Check if username already exists
         if await UserService.get_user(db, user_data.username, by='username'):
             raise HTTPException(status_code=400, detail="Username already registered")
@@ -65,6 +78,8 @@ class UserService:
 
     @staticmethod
     async def update_user(db: AsyncSession, user_id: int, update_data: UserUpdate) -> UserRead:
+        """Update user details including email, username, or password.
+        Ensures no duplicate usernames or emails."""
 
         query = select(User).where(User.id == user_id)
         result = await db.execute(query)
@@ -91,7 +106,7 @@ class UserService:
                 raise HTTPException(status_code=400, detail="Email already taken")
             user.email = data["email"]
 
-        # Update password
+        # Update password if provided
         if "password" in data:
             user.hashed_password = pwd_context.hash(data["password"])
 
@@ -105,6 +120,7 @@ class UserService:
 
     @staticmethod
     async def delete_user(db: AsyncSession, user_id: int) -> None:
+        """Delete a user by ID."""
 
         query = select(User).where(User.id == user_id)
         result = await db.execute(query)

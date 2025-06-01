@@ -6,7 +6,12 @@ from app.db.base import Base
 
 
 class User(Base):
+    """
+    Represents a user in the IoT Hub system.
 
+    Users can own multiple IoT devices. Each user has authentication details
+    and a status flag indicating whether the account is active.
+    """
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
