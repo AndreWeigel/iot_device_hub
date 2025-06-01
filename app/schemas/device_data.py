@@ -1,18 +1,33 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import Optional
 
+
 class DeviceDataIn(BaseModel):
-    sensor_type: str = Field(..., example="temperature")
-    value: float = Field(..., example=23.5)
-    timestamp: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    """
+    Schema for incoming telemetry data from a device.
+
+    Includes sensor type, value, and an optional timestamp.
+    If no timestamp is provided, the current UTC time is used.
+    """
+    sensor_type: str
+    value: float
+    timestamp: Optional[datetime] = Field(
+        default_factory=datetime.utcnow,
+        description="Timestamp of the data point. Defaults to current UTC time."
+    )
+
 
 class DeviceDataOut(BaseModel):
+    """
+    Schema for telemetry data returned from the API.
+
+    Includes the data ID, device ID, and all associated sensor details.
+    """
     id: int
     device_id: int
     sensor_type: str
     value: float
     timestamp: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
