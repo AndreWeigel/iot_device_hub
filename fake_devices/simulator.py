@@ -22,13 +22,13 @@ class DeviceSimulator:
         """
         Authenticate using user credentials and store the JWT token.
         """
-        from fake_devices.config import USERNAME, USER_PASSWORD, LOGIN_URL
+        from fake_devices.config import DEVICE_ID, DEVICE_KEY, LOGIN_URL
 
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(LOGIN_URL, data={
-                    "username": USERNAME,
-                    "password": USER_PASSWORD
+                    "device_id": DEVICE_ID,
+                    "device_key": DEVICE_KEY
                 })
                 if response.status_code == 200:
                     self.token = response.json()["access_token"]
@@ -67,7 +67,6 @@ class DeviceSimulator:
                 async with httpx.AsyncClient() as client:
                     response = await client.post(
                         f"{BACKEND_URL}/devices/data",
-                        params={"device_id": self.device_id},  # assuming device_id is a query param
                         json=payload,
                         headers=headers
                     )
@@ -101,4 +100,4 @@ async def run_multiple_simulators(device_ids: list[int]):
 
 
 if __name__ == "__main__":
-    asyncio.run(run_multiple_simulators(device_ids=[1,2,3]))
+    asyncio.run(run_multiple_simulators(device_ids=[8]))

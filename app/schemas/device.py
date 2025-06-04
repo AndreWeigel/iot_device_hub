@@ -44,3 +44,24 @@ class DeviceRead(DeviceBase):
     id: int
     user_id: int
     last_seen: datetime
+
+class DeviceReadWithKey(DeviceRead):
+    """
+    Schema for reading device data and device key from the API.
+    Gets returned after creating a new IoT device. ONLY!
+    """
+    device_key: str
+
+class DeviceReadWithHashedKey(DeviceRead):
+    """
+    Schema for reading device data and device key from the API.
+    Gets returned after creating a new IoT device. ONLY!
+    """
+    hashed_device_key: str
+
+class Token(BaseModel):
+    """
+    Authentication token returned after successful login.
+    """
+    access_token: str
+    token_type: str  # Typically "bearer"

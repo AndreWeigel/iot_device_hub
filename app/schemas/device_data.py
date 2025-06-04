@@ -10,6 +10,7 @@ class DeviceDataIn(BaseModel):
     Includes sensor type, value, and an optional timestamp.
     If no timestamp is provided, the current UTC time is used.
     """
+
     sensor_type: str
     value: float
     timestamp: Optional[datetime] = Field(
