@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from app.api.routes import user, device, device_data
-
+from app.routes import device
+from app.routes import user, device_data
 
 # Create the FastAPI app instance
 app = FastAPI(
