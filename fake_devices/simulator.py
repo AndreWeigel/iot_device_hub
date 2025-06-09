@@ -2,7 +2,7 @@ from datetime import datetime
 import asyncio
 import httpx
 import random
-from fake_devices.config import BACKEND_URL, SEND_INTERVAL_SECONDS
+from fake_devices.config import BACKEND_URL, SEND_INTERVAL_SECONDS, DEVICES, LOGIN_URL
 from app.schemas.device_data import DeviceDataIn
 
 
@@ -11,24 +11,24 @@ class DeviceSimulator:
     Simulates a single IoT device that sends telemetry data to the backend
     at regular time intervals using HTTP POST requests.
     """
-    def __init__(self, device_id: int, sensor_type: str = "temperature", interval: int = SEND_INTERVAL_SECONDS):
+    def __init__(self, device_id: int, device_key: str, sensor_type: str = "temperature", interval: int = SEND_INTERVAL_SECONDS):
         """Initialize a simulated device."""
         self.device_id = device_id
+        self.device_key = device_key
         self.sensor_type = sensor_type
         self.interval = interval
         self.token = None
 
     async def login(self):
         """
-        Authenticate using user credentials and store the JWT token.
+        Authenticate using device credentials and store the JWT token.
         """
-        from fake_devices.config import DEVICE_ID, DEVICE_KEY, LOGIN_URL
 
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(LOGIN_URL, data={
-                    "device_id": DEVICE_ID,
-                    "device_key": DEVICE_KEY
+                    "device_id": self.device_id,
+                    "device_key": self.device_key
                 })
                 if response.status_code == 200:
                     self.token = response.json()["access_token"]
@@ -77,14 +77,14 @@ class DeviceSimulator:
             await asyncio.sleep(self.interval)
 
 
-async def run_multiple_simulators(device_ids: list[int]):
+async def run_multiple_simulators(devices: list[dict]):
     """Launch and run multiple DeviceSimulators concurrently using asyncio."""
     # Create an empty list to store simulator objects
     simulators = []
 
     # Create a DeviceSimulator for each device ID and add it to the list
-    for device_id in device_ids:
-        simulator = DeviceSimulator(device_id=device_id)
+    for device in devices:
+        simulator = DeviceSimulator(device_id=device['ID'],device_key=device['KEY'])
         simulators.append(simulator)
 
     # Create an empty list to store coroutine tasks
@@ -100,4 +100,6 @@ async def run_multiple_simulators(device_ids: list[int]):
 
 
 if __name__ == "__main__":
-    asyncio.run(run_multiple_simulators(device_ids=[8]))
+    asyncio.run(run_multiple_simulators(DEVICES))
+
+

@@ -12,7 +12,7 @@ from app.db.deps import get_db
 
 router = APIRouter()
 
-@router.post("/device/token", response_model=Token)
+@router.post("/device/token", response_model=Token, tags=["device"])
 async def login_device_for_access_token(device_id: int = Form(...),
                                 device_key: str = Form(...),
                                  db: AsyncSession = Depends(get_db)):
@@ -35,24 +35,24 @@ async def login_device_for_access_token(device_id: int = Form(...),
     }
 
 
-@router.get("/device", response_model=List[DeviceRead])
+@router.get("/device", response_model=List[DeviceRead], tags=["device"])
 async def get_devices_by_current_user(current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
     """Retrieve all devices belonging to the currently authenticated user."""
     return await DeviceService.get_devices_by_user(db, current_user.id)
 
 
-@router.post("/device", response_model=DeviceReadWithKey, status_code=status.HTTP_201_CREATED)
+@router.post("/device", response_model=DeviceReadWithKey, status_code=status.HTTP_201_CREATED, tags=["device"])
 async def register_device(new_device: DeviceCreate, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
     """Register a new device for the current user."""
     return await DeviceService.create_device(db, new_device, current_user.id)
 
 
-@router.put("/devices/{device_id}", response_model=DeviceRead)
+@router.put("/devices/{device_id}", response_model=DeviceRead, tags=["device"])
 async def update_device_route(device_id: int, update_data: DeviceUpdate, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
     """Update a device owned by the current user."""
     return await DeviceService.update_device_for_user(db, device_id, current_user.id, update_data)
 
-@router.delete("/devices/{device_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/devices/{device_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["device"])
 async def delete_device_route(device_id: int, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
     """Delete a device owned by the current user."""
     await DeviceService.delete_device_for_user(db, device_id, current_user.id)

@@ -23,7 +23,7 @@ from app.db.deps import get_db
 
 router = APIRouter()
 
-@router.post("/token", response_model=Token)
+@router.post("/token", response_model=Token, tags=["user"])
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     """
     Authenticates a user and returns a JWT access token.
@@ -38,7 +38,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.get("/user", response_model=UserBase)
+@router.get("/user", response_model=UserBase, tags=["user"])
 async def check_current_user(current_user: UserBase = Depends(get_current_active_user)):
     """
     Returns the currently authenticated user.
@@ -47,7 +47,7 @@ async def check_current_user(current_user: UserBase = Depends(get_current_active
     """
     return current_user
 
-@router.post("/user", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+@router.post("/user", response_model=UserRead, status_code=status.HTTP_201_CREATED, tags=["user"])
 async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     """
     Registers a new user account.
@@ -56,7 +56,7 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     """
     return await UserService.create_user(db, user)
 
-@router.put("/user", response_model=UserRead, status_code=status.HTTP_200_OK)
+@router.put("/user", response_model=UserRead, status_code=status.HTTP_200_OK, tags=["user"])
 async def update_user(new_user_data: UserUpdate, db: AsyncSession = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
     """
     Updates the current user's account details.
@@ -65,7 +65,7 @@ async def update_user(new_user_data: UserUpdate, db: AsyncSession = Depends(get_
     """
     return await UserService.update_user(db, current_user.id, new_user_data)
 
-@router.delete("/user", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/user", status_code=status.HTTP_204_NO_CONTENT, tags=["user"])
 async def delete_user(db: AsyncSession = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
     """
     Deletes the authenticated user's account.

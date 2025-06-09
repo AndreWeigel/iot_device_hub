@@ -14,7 +14,7 @@ router = APIRouter()
 #TODO Create endpoints for Last X data points per device
 #TODO Create endpoints for Range queries: ?start=...&end=...
 
-@router.post("/devices/data", response_model=DeviceDataOut)
+@router.post("/devices/data", response_model=DeviceDataOut, tags=["data_ingestion"])
 async def ingest_device_data(data: DeviceDataIn,
                              device: DeviceRead = Depends(get_current_device),
                              db: AsyncSession = Depends(get_db)):
