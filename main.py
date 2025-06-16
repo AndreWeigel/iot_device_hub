@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.routes import device
 from app.routes import user, device_data
+from app.lifespan import lifespan
 
 # Create the FastAPI app instance
 app = FastAPI(
@@ -10,7 +11,9 @@ app = FastAPI(
     and to ingest, store, and retrieve telemetry data sent from those devices. 
     Supports user authentication, device provisioning, and real-time data ingestion.
     """,
-    version="1.0.0"
+    version="1.0.0",
+    docs_url="/",
+    lifespan = lifespan
 )
 
 # Include user-related routes
