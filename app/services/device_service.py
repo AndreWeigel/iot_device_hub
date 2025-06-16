@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime, timezone
 
-from app.models.device import Device
-from app.schemas.device import DeviceCreate, DeviceUpdate, DeviceRead, DeviceReadWithKey, DeviceReadWithHashedKey
+from app.models.device import (Device, DeviceCreate, DeviceUpdate, DeviceRead,
+                               DeviceReadWithKey, DeviceReadWithHashedKey)
 from app.auth.auth_device_handler import generate_device_key, hash_device_key
 
 class DeviceService:

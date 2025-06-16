@@ -5,9 +5,7 @@ from passlib.context import CryptContext
 from fastapi import HTTPException
 from typing import Optional
 
-from app.models.user import User
-from app.schemas.user import UserCreate, UserUpdate, UserRead
-
+from app.models.user import User, UserCreate, UserUpdate, UserRead
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

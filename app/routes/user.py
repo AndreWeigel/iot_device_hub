@@ -4,27 +4,22 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 # Pydantic schemas
-from app.schemas.user import (
-    UserInDB,
-    UserBase,
-    UserRead,
-    UserUpdate,
-    UserDelete,
-    UserCreate,
-    Token
-)
+from app.models.user import (UserInDB, UserBase, UserRead,
+                             UserUpdate, UserDelete, UserCreate,
+                             Token)
 
 # Business logic and authentication
 from app.services.user_service import UserService
 from app.auth.auth_handler import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from app.auth.auth_bearer import get_current_active_user
-from app.db.deps import get_db
+from app.db.session import get_db_session
 
 router = APIRouter()
 
 @router.post("/token", response_model=Token, tags=["user"])
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db_session)):
     """
     Authenticates a user and returns a JWT access token.
 
@@ -48,7 +43,7 @@ async def check_current_user(current_user: UserBase = Depends(get_current_active
     return current_user
 
 @router.post("/user", response_model=UserRead, status_code=status.HTTP_201_CREATED, tags=["user"])
-async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db_session)):
     """
     Registers a new user account.
 
@@ -57,7 +52,7 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return await UserService.create_user(db, user)
 
 @router.put("/user", response_model=UserRead, status_code=status.HTTP_200_OK, tags=["user"])
-async def update_user(new_user_data: UserUpdate, db: AsyncSession = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
+async def update_user(new_user_data: UserUpdate, db: AsyncSession = Depends(get_db_session), current_user: UserBase = Depends(get_current_active_user)):
     """
     Updates the current user's account details.
 
@@ -66,7 +61,7 @@ async def update_user(new_user_data: UserUpdate, db: AsyncSession = Depends(get_
     return await UserService.update_user(db, current_user.id, new_user_data)
 
 @router.delete("/user", status_code=status.HTTP_204_NO_CONTENT, tags=["user"])
-async def delete_user(db: AsyncSession = Depends(get_db), current_user: UserBase = Depends(get_current_active_user)):
+async def delete_user(db: AsyncSession = Depends(get_db_session), current_user: UserBase = Depends(get_current_active_user)):
     """
     Deletes the authenticated user's account.
 

@@ -3,7 +3,7 @@ import asyncio
 import httpx
 import random
 from fake_devices.config import BACKEND_URL, SEND_INTERVAL_SECONDS, DEVICES, LOGIN_URL
-from app.schemas.device_data import DeviceDataIn
+from app.models.device_data import DeviceDataIn
 
 
 class DeviceSimulator:
@@ -11,11 +11,11 @@ class DeviceSimulator:
     Simulates a single IoT device that sends telemetry data to the backend
     at regular time intervals using HTTP POST requests.
     """
-    def __init__(self, device_id: int, device_key: str, sensor_type: str = "temperature", interval: int = SEND_INTERVAL_SECONDS):
+    def __init__(self, device_id: int, device_key: str, reading_type: str = "temperature", interval: int = SEND_INTERVAL_SECONDS):
         """Initialize a simulated device."""
         self.device_id = device_id
         self.device_key = device_key
-        self.sensor_type = sensor_type
+        self.reading_type = reading_type
         self.interval = interval
         self.token = None
 
@@ -41,7 +41,7 @@ class DeviceSimulator:
     def _generate_payload(self) -> dict:
         """Generate a telemetry payload using the Pydantic schema."""
         data = DeviceDataIn(
-            sensor_type=self.sensor_type,
+            reading_type=self.reading_type,
             value=round(random.uniform(20.0, 30.0), 2),
             timestamp=datetime.utcnow()
         )

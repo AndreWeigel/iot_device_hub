@@ -3,17 +3,17 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import JWTError, jwt
 
-from app.schemas.user import TokenData, UserInDB
+from app.models.user import TokenData, UserInDB
 from app.auth.auth_handler import SECRET_KEY, ALGORITHM
 from app.services.user_service import UserService
-from app.db.deps import get_db
+from app.db.session import get_db_session
 
 
 # OAuth2PasswordBearer defines how the token is retrieved from the request
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> UserInDB:
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db_session)) -> UserInDB:
     """Validates the JWT token and retrieves the current user from the database."""
     credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                           detail="Could not validate credentials",

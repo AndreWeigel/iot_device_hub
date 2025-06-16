@@ -4,14 +4,14 @@ from fastapi.security.utils import get_authorization_scheme_param
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.deps import get_db
+from app.db.session import get_db_session
 from app.auth.auth_device_handler import SECRET_KEY, ALGORITHM
-from app.schemas.device import DeviceRead
+from app.models.device import DeviceRead
 from app.services.device_service import DeviceService
 
 
 async def get_current_device(request: Request,
-                             db: AsyncSession = Depends(get_db)) -> DeviceRead:
+                             db: AsyncSession = Depends(get_db_session)) -> DeviceRead:
     """Validates the JWT token and returns the current device."""
 
     credentials_exception = HTTPException(

@@ -2,12 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-from app.db.deps import get_db
+from app.db.session import get_db_session
 from app.auth.auth_device_bearer import get_current_device
-from app.models.device import Device
-from app.models.device_data import DeviceData
-from app.schemas.device_data import DeviceDataIn, DeviceDataOut
-from app.schemas.device import DeviceRead
+from app.models.device import Device, DeviceRead
+from app.models.device_data import DeviceData, DeviceDataIn, DeviceDataOut
+
 
 router = APIRouter()
 
@@ -17,7 +16,7 @@ router = APIRouter()
 @router.post("/devices/data", response_model=DeviceDataOut, tags=["data_ingestion"])
 async def ingest_device_data(data: DeviceDataIn,
                              device: DeviceRead = Depends(get_current_device),
-                             db: AsyncSession = Depends(get_db)):
+                             db: AsyncSession = Depends(get_db_session)):
     """Ingest telemetry data from a device associated with the current authenticated user."""
     # Check if the device belongs to this user
 
@@ -33,7 +32,7 @@ async def ingest_device_data(data: DeviceDataIn,
     # Store the telemetry data
     db_data = DeviceData(
         device_id=device_id,
-        sensor_type=data.sensor_type,
+        reading_type=data.reading_type,
         value=data.value,
         timestamp=data.timestamp,
     )

@@ -1,22 +1,36 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import TIMESTAMP
-from app.db.base import Base
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional
+from datetime import datetime
 
-class DeviceData(Base):
+
+class DeviceDataIn(SQLModel):
+    """Schema for incoming telemetry data from a device."""
+
+    reading_type: str
+    value: float
+    timestamp: Optional[datetime] = Field(
+        default_factory=datetime.utcnow,
+        description="Timestamp of the data point. Defaults to current UTC time."
+    )
+
+
+class DeviceDataOut(DeviceDataIn):
+    """Schema for telemetry data returned from the API."""
+    id: int
+    device_id: int
+
+
+class DeviceData(SQLModel, table=True):
     """
     Represents a single telemetry data point reported by a device.
 
     Contains sensor type, value, and timestamp. Each record is associated
     with a specific IoT device.
     """
-    __tablename__ = "device_data"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    device_id: int = Field(foreign_key="device.id")
+    reading_type: str
+    value: float
+    timestamp: datetime = Field(default_factory=datetime.utcnow, nullable=False)
 
-    id = Column(Integer, primary_key=True, index=True)
-    device_id = Column(Integer, ForeignKey("devices.id",ondelete="CASCADE"), nullable=False)
-    sensor_type = Column(String, nullable=False) # metric, unit
-    value = Column(Float, nullable=False)
-    timestamp = Column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
-
-    device = relationship("Device", back_populates="data_points")
+    device: Optional["Device"] = Relationship(back_populates="data_points")
