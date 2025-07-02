@@ -29,7 +29,6 @@ class UserInDB(UserBase):
 
 class UserRead(UserBase):
     """Schema for reading user details from the API."""
-    id: int
     email: EmailStr
     created_at: datetime
     is_active: bool

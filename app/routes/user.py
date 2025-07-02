@@ -33,14 +33,14 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.get("/user", response_model=UserBase, tags=["user"])
-async def check_current_user(current_user: UserBase = Depends(get_current_active_user)):
+@router.get("/user", response_model=UserRead, tags=["user"])
+async def check_current_user(db: AsyncSession = Depends(get_db_session), current_user: UserBase = Depends(get_current_active_user)):
     """
     Returns the currently authenticated user.
 
     Used for session checks or frontend auto-login verification.
     """
-    return current_user
+    return await UserService.get_user(db, current_user.id, by = "id")
 
 @router.post("/user", response_model=UserRead, status_code=status.HTTP_201_CREATED, tags=["user"])
 async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db_session)):

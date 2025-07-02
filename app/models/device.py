@@ -28,7 +28,7 @@ class Device(DeviceBase, table=True):
                                  sa_column=Column(DateTime(timezone=True), nullable=False)) # force timezone aawareness
     last_seen: Optional[datetime] = Field(default_factory=now_utc,
                                           sa_column=Column(DateTime(timezone=True), nullable=False))
-
+    mqtt_enabled: Optional[bool] = Field(default=True)
     user_id: int = Field(foreign_key="user.id")
 
     owner: Optional[User] = Relationship(back_populates="devices")
@@ -51,6 +51,7 @@ class DeviceRead(DeviceBase):
     id: int
     user_id: int
     last_seen: datetime
+    mqtt_enabled: bool
 
 class DeviceReadWithKey(DeviceRead):
     """

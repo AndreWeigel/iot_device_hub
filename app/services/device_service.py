@@ -92,6 +92,7 @@ class DeviceService:
         device = await DeviceService.get_user_device(db, device_id, user_id)
         return await DeviceService.update_device(db, device, update_data)
 
+
     @staticmethod
     async def delete_device(db: AsyncSession, device: Device) -> None:
         """Permanently delete a device."""
@@ -103,3 +104,31 @@ class DeviceService:
         """Delete a device that belongs to a specific user."""
         device = await DeviceService.get_user_device(db, device_id, user_id)
         await DeviceService.delete_device(db, device)
+
+
+    @staticmethod
+    async def update_mqtt_enabled_for_user(db: AsyncSession, device_id: int, user_id: int, mqtt_enabled: bool) -> bool:
+        device = await DeviceService.get_user_device(db, device_id, user_id)
+        if device.mqtt_enabled != mqtt_enabled:
+            device.mqtt_enabled = mqtt_enabled
+            await db.commit()
+            await db.refresh(device)
+        return mqtt_enabled
+
+    @staticmethod
+    async def get_mqtt_enabled_topics(db: AsyncSession) -> list:
+        query = select(Device.id).where(Device.mqtt_enabled == True)
+        result = await db.execute(query)
+        topics = [f"devices/{row[0]}" for row in result.all()]
+        return topics
+
+    @staticmethod
+    async def get_mqtt_topic_for_device(db: AsyncSession, device_id: int) -> str | None:
+        query = select(Device).where(Device.id == device_id, Device.mqtt_enabled == True)
+        result = await db.execute(query)
+        device = result.scalar_one_or_none()
+
+        if device:
+            return f"devices/{device.id}"
+        return None
+

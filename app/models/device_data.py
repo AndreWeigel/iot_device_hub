@@ -1,6 +1,12 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional
 from datetime import datetime
+from app.utils import now_utc
+from sqlalchemy import Column
+from sqlalchemy.types import DateTime
+
+
+
 
 
 class DeviceDataIn(SQLModel):
@@ -9,7 +15,7 @@ class DeviceDataIn(SQLModel):
     reading_type: str
     value: float
     timestamp: Optional[datetime] = Field(
-        default_factory=datetime.utcnow,
+        default_factory=now_utc,
         description="Timestamp of the data point. Defaults to current UTC time."
     )
 
@@ -31,6 +37,7 @@ class DeviceData(SQLModel, table=True):
     device_id: int = Field(foreign_key="device.id")
     reading_type: str
     value: float
-    timestamp: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    timestamp: datetime = Field(default_factory=now_utc,
+                                 sa_column=Column(DateTime(timezone=True), nullable=False))
 
     device: Optional["Device"] = Relationship(back_populates="data_points")

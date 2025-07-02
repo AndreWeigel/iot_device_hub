@@ -9,10 +9,11 @@ from app.services.device_service import DeviceService
 from app.auth.auth_device_handler import authenticate_device, create_device_token
 from app.auth.auth_bearer import get_current_active_user
 from app.db.session import get_db_session
+from app.mqtt.mqtt_service import initialize_single_mqtt_subscription
 
 router = APIRouter()
 
-@router.post("/device/token", response_model=Token, tags=["device"])
+@router.post("/device/token", status_code=status.HTTP_200_OK, response_model=Token, tags=["device"])
 async def login_device_for_access_token(device_id: int = Form(...),
                                 device_key: str = Form(...),
                                  db: AsyncSession = Depends(get_db_session)):
@@ -35,7 +36,7 @@ async def login_device_for_access_token(device_id: int = Form(...),
     }
 
 
-@router.get("/device", response_model=List[DeviceRead], tags=["device"])
+@router.get("/device", status_code=status.HTTP_200_OK, response_model=List[DeviceRead], tags=["device"])
 async def get_devices_by_current_user(current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db_session)):
     """Retrieve all devices belonging to the currently authenticated user."""
     return await DeviceService.get_devices_by_user(db, current_user.id)
@@ -44,16 +45,25 @@ async def get_devices_by_current_user(current_user: UserBase = Depends(get_curre
 @router.post("/device", response_model=DeviceReadWithKey, status_code=status.HTTP_201_CREATED, tags=["device"])
 async def register_device(new_device: DeviceCreate, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db_session)):
     """Register a new device for the current user."""
-    return await DeviceService.create_device(db, new_device, current_user.id)
+    device = await DeviceService.create_device(db, new_device, current_user.id)
+    import asyncio
+    asyncio.create_task(initialize_single_mqtt_subscription(device.id))
+    return device
 
 
-@router.put("/devices/{device_id}", response_model=DeviceRead, tags=["device"])
-async def update_device_route(device_id: int, update_data: DeviceUpdate, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db_session)):
+@router.put("/devices/{device_id}", status_code=status.HTTP_200_OK, response_model=DeviceRead, tags=["device"])
+async def update_device(device_id: int, update_data: DeviceUpdate, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db_session)):
     """Update a device owned by the current user."""
     return await DeviceService.update_device_for_user(db, device_id, current_user.id, update_data)
 
+
 @router.delete("/devices/{device_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["device"])
-async def delete_device_route(device_id: int, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db_session)):
+async def delete_device(device_id: int, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db_session)):
     """Delete a device owned by the current user."""
     await DeviceService.delete_device_for_user(db, device_id, current_user.id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.put("/devices/{device_id}/mqtt", status_code=status.HTTP_200_OK, response_model=DeviceRead, tags=["device"])
+async def update_mqtt_enabled(device_id: int, mqtt_enabled: bool, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db_session)):
+    """Update a device owned by the current user."""
+    return await DeviceService.update_mqtt_enabled_for_user(db, device_id, current_user.id, mqtt_enabled)
