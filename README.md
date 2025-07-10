@@ -69,12 +69,36 @@ streamlit run main.py
 
 ## 🔄 Simulating devices
 
-```python
-from fake_devices.mqtt_device import SimulatedMQTTDevice
+When a new device is created, the system generates a `device_key`. This key must be used by the simulator to authenticate when sending data via HTTP or MQTT.
 
-d = SimulatedMQTTDevice(device_id="thermo‑001",
-                        topic="devices/thermo‑001/data")
-d.send_data({"temperature": 22.4, "humidity": 58})
+The simulator can run one or more devices using a JSON file like this:
+
+```json
+[
+  {
+    "device_id": 1,
+    "device_key": "YOUR_DEVICE_KEY",
+    "protocol": "http"
+  },
+  {
+    "device_id": 1,
+    "device_key": "YOUR_DEVICE_KEY",
+    "protocol": "mqtt"
+  }
+]
+```
+
+Save it as `device_list.json`, then run the simulators:
+
+```python
+import asyncio
+import json
+from device_simulator.simulator import run_multiple_simulators
+
+with open("device_list.json") as f:
+    device_list = json.load(f)
+
+asyncio.run(run_multiple_simulators(device_list))
 ```
 
 You can launch multiple simulated devices in parallel to stress‑test the hub.
