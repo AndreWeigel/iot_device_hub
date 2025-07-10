@@ -4,14 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d703303e-d1bf-4300-bd8a-a0a89edc8850" name="Changes" comment="Implement MQTT connection&#10;Add MQTT simulator">
-      <change afterPath="$PROJECT_DIR$/streamlit_app/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/streamlit_app/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/streamlit_app/pages/1_dashboard.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/streamlit_app/pages/2_account.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/streamlit_app/pages/3_devices.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/streamlit_app/pages/4_register.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/streamlit_app/pages/__init__.py" afterDir="false" />
+    <list default="true" id="d703303e-d1bf-4300-bd8a-a0a89edc8850" name="Changes" comment="Streamlit app">
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/streamlit_app/assets/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/streamlit_app/assets/logo.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -82,6 +78,7 @@
       <recent name="$PROJECT_DIR$/app/models" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/streamlit_app/assets" />
       <recent name="$PROJECT_DIR$/app" />
       <recent name="$PROJECT_DIR$/fake_devices" />
       <recent name="$PROJECT_DIR$" />
@@ -127,7 +124,7 @@
       <workItem from="1748963213876" duration="402000" />
       <workItem from="1748963619848" duration="35753000" />
       <workItem from="1749165578190" duration="49000" />
-      <workItem from="1749416709879" duration="132438000" />
+      <workItem from="1749416709879" duration="134682000" />
     </task>
     <task id="LOCAL-00001" summary="User model">
       <option name="closed" value="true" />
@@ -409,7 +406,15 @@
       <option name="project" value="LOCAL" />
       <updated>1751471993029</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="Streamlit app">
+      <option name="closed" value="true" />
+      <created>1752164903743</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1752164903743</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -427,7 +432,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="registering a user, saving them in postgresql and authenticating works, I could cry" />
     <MESSAGE value="user update and delete functions" />
     <MESSAGE value="refactor user routes" />
     <MESSAGE value="refactor user service and schemas" />
@@ -452,7 +456,8 @@
     <MESSAGE value="update models and database in order to use sqlmodel" />
     <MESSAGE value="add database creating at startup, if it does not exist" />
     <MESSAGE value="Implement MQTT connection&#10;Add MQTT simulator" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implement MQTT connection&#10;Add MQTT simulator" />
+    <MESSAGE value="Streamlit app" />
+    <option name="LAST_COMMIT_MESSAGE" value="Streamlit app" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/iot_device_hub$streamlit_app.coverage" NAME="streamlit_app Coverage Results" MODIFIED="1750113000639" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/streamlit_app" />
