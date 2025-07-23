@@ -68,3 +68,20 @@ async def delete_user(db: AsyncSession = Depends(get_db_session), current_user: 
     Returns 204 No Content on success.
     """
     await UserService.delete_user(db, current_user.id)
+
+from app.models.user import PasswordChange
+
+@router.post("/user/password", status_code=status.HTTP_204_NO_CONTENT, tags=["user"])
+async def change_password(payload: PasswordChange, db: AsyncSession = Depends(get_db_session),
+                          current_user: UserBase = Depends(get_current_active_user)):
+    """
+    Change the authenticated user's password.
+
+    Requires the current (old) password and the new one (confirmed).
+    """
+    if payload.new_password != payload.new_password_confirm:
+        raise HTTPException(status_code=400, detail="Passwords do not match")
+
+    await UserService.change_password(
+        db, current_user.id, payload.old_password, payload.new_password
+    )

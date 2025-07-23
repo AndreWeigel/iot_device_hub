@@ -6,9 +6,6 @@ from sqlalchemy import Column
 from sqlalchemy.types import DateTime
 
 
-
-
-
 class DeviceDataIn(SQLModel):
     """Schema for incoming telemetry data from a device."""
 

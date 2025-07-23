@@ -104,10 +104,6 @@ class UserService:
                 raise HTTPException(status_code=400, detail="Email already taken")
             user.email = data["email"]
 
-        # Update password if provided
-        if "password" in data:
-            user.hashed_password = pwd_context.hash(data["password"])
-
         try:
             await db.commit()
             await db.refresh(user)
@@ -115,6 +111,20 @@ class UserService:
         except SQLAlchemyError:
             await db.rollback()
             raise HTTPException(status_code=500, detail="Failed to update user")
+
+    @staticmethod
+    async def change_password(
+            db: AsyncSession,
+            user_id: int,
+            old_password: str,
+            new_password: str,
+    ) -> None:
+        user = await UserService.get_user(db, user_id, by="id")
+        if not UserService.verify_password(old_password, user_id, user.hashed_password):
+            raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+        user.hashed_password = pwd_context.hash(new_password)
+        await db.commit()
 
     @staticmethod
     async def delete_user(db: AsyncSession, user_id: int) -> None:
@@ -133,3 +143,11 @@ class UserService:
         except SQLAlchemyError:
             await db.rollback()
             raise HTTPException(status_code=500, detail="Failed to delete user")
+
+    @staticmethod
+    async def verify_password(db: AsyncSession, user_id: int, plain_password: str) -> bool:
+        """Verifies a plain password against a hashed password using bcrypt."""
+        query = select(User.hashed_password).where(User.id == user_id)
+        result = await db.execute(query)
+        hashed_password = result.scalar_one_or_none()
+        return pwd_context.verify(plain_password, hashed_password)
