@@ -21,14 +21,14 @@ def register(username, email, password):
         st.error(f"Registration error: {e}")
         return None
 
+def registration_page(:)
+    st.title("📝 Register")
 
-st.title("📝 Register")
+    username = st.text_input("Choose a Username")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
 
-username = st.text_input("Choose a Username")
-email = st.text_input("Email")
-password = st.text_input("Password", type="password")
-
-if st.button("Register"):
-    # Replace with actual API call
-    st.success("Registration successful! Please go to login.")
-    st.page_link("app.py", label="Back to Login", icon="🔙")
+    if st.button("Register"):
+        # Replace with actual API call
+        st.success("Registration successful! Please go to login.")
+        st.page_link("account.py", label="Back to Login", icon="🔙")
