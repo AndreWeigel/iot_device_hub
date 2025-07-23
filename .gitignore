@@ -1,0 +1,4 @@
+# created by virtualenv automatically
+.venv
+.env
+/fake_devices/device_list.json
