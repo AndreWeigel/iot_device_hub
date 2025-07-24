@@ -19,8 +19,7 @@ class DeviceDataIn(SQLModel):
 
 class DeviceDataOut(DeviceDataIn):
     """Schema for telemetry data returned from the API."""
-    id: int
-    device_id: int
+    pass
 
 
 class DeviceData(SQLModel, table=True):

@@ -4,6 +4,9 @@ from app.services.device_service import DeviceService
 from app.db.session import db_session_context
 from app.mqtt.mqtt_client import MQTTClient
 
+from sqlalchemy import select
+
+
 mqtt_client = None  # Keep reference for shutdown
 
 async def initialize_all_mqtt_subscriptions(loop):
