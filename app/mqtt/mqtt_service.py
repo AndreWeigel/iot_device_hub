@@ -1,18 +1,26 @@
 import asyncio
+import os
 
 from app.services.device_service import DeviceService
 from app.db.session import db_session_context
 from app.mqtt.mqtt_client import MQTTClient
 
 from sqlalchemy import select
-
+from dotenv import load_dotenv
+load_dotenv()
 
 mqtt_client = None  # Keep reference for shutdown
+
+
+def get_broker_url():
+    return os.getenv("MQTT_BROKER_URL", "localhost")
+
 
 async def initialize_all_mqtt_subscriptions(loop):
 
     global mqtt_client
-    mqtt_client = MQTTClient(client_id="myClient", loop=loop)
+    broker_url = get_broker_url()
+    mqtt_client = MQTTClient(client_id="myClient", loop=loop, broker=broker_url)
 
     try:
         async with db_session_context() as db:

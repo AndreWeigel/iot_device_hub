@@ -10,7 +10,7 @@ import paho.mqtt.client as mqtt
 
 
 # MQTT Configuration
-MQTT_BROKER = "localhost"
+MQTT_BROKER = 'test.mosquitto.org'
 MQTT_PORT = 1883
 MQTT_TOPIC_TEMPLATE = "devices/{device_id}"
 
