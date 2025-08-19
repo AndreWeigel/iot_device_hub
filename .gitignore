@@ -2,3 +2,6 @@
 .venv
 .env
 /fake_devices/device_list.json
+.*
+!.gitignore
+!.git/
