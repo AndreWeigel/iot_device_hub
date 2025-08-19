@@ -66,4 +66,6 @@ async def delete_device(device_id: int, current_user: UserBase = Depends(get_cur
 @router.put("/devices/{device_id}/mqtt", status_code=status.HTTP_200_OK, response_model=DeviceRead, tags=["device"])
 async def update_mqtt_enabled(device_id: int, mqtt_enabled: bool, current_user: UserBase = Depends(get_current_active_user), db: AsyncSession = Depends(get_db_session)):
     """Update a device owned by the current user."""
-    return await DeviceService.update_mqtt_enabled_for_user(db, device_id, current_user.id, mqtt_enabled)
+    await DeviceService.update_mqtt_enabled_for_user(db, device_id, current_user.id, mqtt_enabled)
+    device = await DeviceService.get_user_device(db, device_id, current_user.id)
+    return DeviceRead.model_validate(device, from_attributes=True)

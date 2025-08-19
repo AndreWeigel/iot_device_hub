@@ -107,13 +107,13 @@ class DeviceService:
 
 
     @staticmethod
-    async def update_mqtt_enabled_for_user(db: AsyncSession, device_id: int, user_id: int, mqtt_enabled: bool) -> bool:
+    async def update_mqtt_enabled_for_user(db: AsyncSession, device_id: int, user_id: int, mqtt_enabled: bool) -> DeviceRead:
         device = await DeviceService.get_user_device(db, device_id, user_id)
         if device.mqtt_enabled != mqtt_enabled:
             device.mqtt_enabled = mqtt_enabled
             await db.commit()
             await db.refresh(device)
-        return mqtt_enabled
+        return DeviceRead.model_validate(device, from_attributes=True)
 
     @staticmethod
     async def get_mqtt_enabled_topics(db: AsyncSession) -> list:
