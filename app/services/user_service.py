@@ -86,7 +86,7 @@ class UserService:
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        data = update_data.dict(exclude_unset=True)
+        data = update_data.model_dump(exclude_unset=True)
 
         # Check for username conflict
         if "username" in data and data["username"] != user.username:
