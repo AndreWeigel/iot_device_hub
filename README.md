@@ -27,8 +27,7 @@ A backend service and lightweight dashboard for onboarding IoT devices, collecti
 ├── fake_devices/      # Device simulator classes
 ├── streamlit_app/     # Streamlit UI
 ├── tests/             # pytest suites
-├── main.py            # API entry‑point
-└── test_main.http     # VSCode REST Client request collection
+└──  main.py            # API entry‑point
 ```
 
 ---
