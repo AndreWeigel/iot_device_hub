@@ -39,7 +39,7 @@ A backend service and lightweight dashboard for onboarding IoT devices, collecti
 * Python ≥ 3.9
 * Running MQTT broker (e.g. Mosquitto)
 * PostgreSQL § or SQLite
-* `pip` or **Poetry** for dependency management
+* `pip` for dependency management
 
 ### Installation
 
