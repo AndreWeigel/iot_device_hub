@@ -14,11 +14,12 @@ MQTT_BROKER = 'test.mosquitto.org'
 MQTT_PORT = 1883
 MQTT_TOPIC_TEMPLATE = "devices/{device_id}"
 
-
+#I need to add something here
 class DeviceSimulator:
     """
     Simulates an IoT device sending telemetry data via HTTP or MQTT.
     """
+    print('ASdasd')
 
     def __init__(
         self,
