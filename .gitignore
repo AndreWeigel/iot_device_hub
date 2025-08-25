@@ -4,3 +4,5 @@
 /fake_devices/device_list.json
 .*
 !.gitignore
+*.db
+*.sqlite3
