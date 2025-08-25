@@ -1,60 +1,35 @@
-name: CI                      # Just the title you’ll see in the Actions tab
-
-on:                          # When to run this workflow
+name: CI
+on:
   push:
-    branches: [ main ]       # any push to main
+    branches: [ master ]
   pull_request:
-    branches: [ main ]       # any PR targeting main
+    branches: [ master ]
 
-concurrency:                 # (nice-to-have) cancel older runs on same branch/PR
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:                        # A workflow can have multiple jobs; here we have one: "test"
+jobs:
   test:
-    runs-on: ubuntu-latest   # Which machine image to use
-
-    strategy:                # Run the same job against multiple Python versions
+    runs-on: ubuntu-latest
+    strategy:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12"]
 
-    env:                     # Environment variables available to all steps
+    env:
       API_SECRET_KEY: "test-secret-key"
       API_ALGORITHM: "HS256"
       MQTT_BROKER_URL: "localhost"
       DATABASE_URL: "sqlite+aiosqlite:///./test_iot_device_hub.db"
       PY_COLORS: "1"
 
-    steps:                   # The ordered steps the runner will execute
-      - name: Check out code
-        uses: actions/checkout@v4          # Pull your repo onto the runner
-
-      - name: Set up Python
-        uses: actions/setup-python@v5      # Install the selected Python version
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"                     # Speed up installs
-
+          cache: "pip"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install pytest pytest-asyncio anyio httpx coverage
-
       - name: Run tests
-        run: |
-          pytest -q --maxfail=1 --disable-warnings
-
-      - name: Coverage (xml)               # Optional: produce coverage report
-        if: ${{ success() || failure() }}  # run even if tests failed
-        run: |
-          coverage run -m pytest
-          coverage xml -o coverage.xml
-
-      - name: Upload coverage.xml          # Optional: store coverage as an artifact
-        if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-${{ matrix.python-version }}
-          path: coverage.xml
+        run: pytest -q --maxfail=1 --disable-warnings
