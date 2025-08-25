@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
 from app.auth.auth_device_handler import SECRET_KEY, ALGORITHM
-from app.models.device import DeviceRead
 from app.services.device_service import DeviceService
+from app.models.device import DeviceRead
 
 
 async def get_current_device(request: Request,

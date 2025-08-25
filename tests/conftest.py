@@ -4,14 +4,24 @@ import pathlib
 import pytest
 
 
-# Ensure an event loop exists for async tests (pytest-asyncio default mode is auto in recent versions)
-@pytest.fixture(scope="session")
+# ---------------------------
+# EVENT LOOP FOR ASYNC TESTS
+# ---------------------------
+# Pytest-asyncio usually provides a loop automatically, but here you create
+# one shared loop for the whole test session. Anything that needs the loop
+# (e.g., async DB setup/teardown) can reuse it.@pytest.fixture(scope="session")
 def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+    loop = asyncio.new_event_loop()   # create a new event loop object
+    yield loop                        # make it available to tests/fixtures
+    loop.close()                      # teardown: close the event loop once all tests are done
 
 
+
+# ---------------------------
+# DATABASE URL (TEST)
+# ---------------------------
+# Build a *file-based* SQLite URL in a tmp directory. File-based (not in-memory)
+# is important because multiple async connections will see the same DB and state.
 @pytest.fixture(scope="session")
 def test_db_url(tmp_path_factory):
     # Use a file-based SQLite DB to persist across connections during tests
@@ -20,6 +30,11 @@ def test_db_url(tmp_path_factory):
     return f"sqlite+aiosqlite:///{db_path}"
 
 
+# ---------------------------
+# TEST ENVIRONMENT VARIABLES
+# ---------------------------
+# autouse=True -> runs for the entire test session even if no test explicitly requests it.
+# You set secrets and point the app’s DB to the test DB *before* the app imports/initializes.
 @pytest.fixture(scope="session", autouse=True)
 def set_test_env(test_db_url):
     # Minimal secrets for JWT
@@ -31,6 +46,11 @@ def set_test_env(test_db_url):
     os.environ["MQTT_BROKER_URL"] = "localhost"
 
 
+# ---------------------------
+# FASTAPI APP INSTANCE
+# ---------------------------
+# This fixture imports your FastAPI app *after* env vars are set, ensuring the DB engine
+# binds to the test DB. It also patches MQTT-related functions to avoid real network calls.
 @pytest.fixture(scope="session")
 def app_instance(set_test_env):
     # Import app after env is set so the engine binds to the test DB
@@ -72,6 +92,11 @@ def app_instance(set_test_env):
     return fastapi_app
 
 
+# ---------------------------
+# HTTP CLIENT (SYNC)
+# ---------------------------
+# FastAPI's TestClient wraps the ASGI app and automatically runs lifespan
+# (startup/shutdown) within the context manager. Each test gets a fresh client.
 @pytest.fixture()
 def client(app_instance):
     # Use FastAPI's TestClient to handle startup/shutdown automatically
@@ -81,6 +106,12 @@ def client(app_instance):
         yield c
 
 
+
+# ---------------------------
+# DIRECT DB SESSION ACCESS (OPTIONAL)
+# ---------------------------
+# For tests that want to do DB setup/inspection without going through HTTP.
+# Returns a small wrapper that runs an async coroutine from a sync test using anyio.
 @pytest.fixture()
 def db_session():
     # Yield a real AsyncSession bound to the test engine for setup/teardown use in tests
@@ -99,6 +130,10 @@ def db_session():
     return _SessionWrapper()
 
 
+# ---------------------------
+# HELPERS: CREATE USER VIA API
+# ---------------------------
+# Calls POST /user with a typical payload and asserts a 201 Created response.
 @pytest.fixture()
 def create_user():
     # Helper to create a user via the API to ensure consistent hashing and side-effects
@@ -111,6 +146,10 @@ def create_user():
     return _create
 
 
+# ---------------------------
+# HELPERS: LOGIN TO GET JWT
+# ---------------------------
+# Posts form-encoded credentials to /token (OAuth2PasswordRequestForm convention).
 @pytest.fixture()
 def get_user_token():
     def _login(client, username: str, password: str) -> str:
@@ -123,6 +162,10 @@ def get_user_token():
     return _login
 
 
+# ---------------------------
+# HELPERS: AUTHORIZATION HEADER
+# ---------------------------
+# Convenience: obtain a Bearer token and build the Authorization header.
 @pytest.fixture()
 def auth_header(get_user_token):
     def _hdr(client, username: str, password: str):
@@ -132,6 +175,10 @@ def auth_header(get_user_token):
     return _hdr
 
 
+# ---------------------------
+# HELPERS: REGISTER DEVICE VIA API
+# ---------------------------
+# Calls POST /device with auth, expects a 201 and returns the response JSON (e.g. device_key).
 @pytest.fixture()
 def register_device():
     def _register(client, auth_header, name="sensor-1", device_type="thermometer"):
